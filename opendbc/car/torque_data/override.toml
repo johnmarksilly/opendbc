@@ -24,6 +24,9 @@ legend = ["LAT_ACCEL_FACTOR", "MAX_LAT_ACCEL_MEASURED", "FRICTION"]
 "TESLA_MODEL_X" = [nan, 2.5, nan]
 
 # Guess
+"VOLKSWAGEN_ID4_MK1" = [nan, 2.5, nan]
+"VOLKSWAGEN_ID4_MK2" = [nan, 2.5, nan]
+"CUPRA_BORN_MK1" = [nan, 2.5, nan]
 "FORD_BRONCO_SPORT_MK1" = [nan, 1.5, nan]
 "FORD_ESCAPE_MK4" = [nan, 1.5, nan]
 "FORD_ESCAPE_MK4_5" = [nan, 1.5, nan]
@@ -108,3 +111,7 @@ legend = ["LAT_ACCEL_FACTOR", "MAX_LAT_ACCEL_MEASURED", "FRICTION"]
 # Manually checked
 "HONDA_CIVIC_2022" = [2.5, 1.2, 0.15]
 "HONDA_HRV_3G" = [2.5, 1.2, 0.2]
+
+# port extensions
+"HONDA_CLARITY" = [0.96, 0.4018518740819229, 0.19]
+"CHEVROLET_MALIBU_NON_ACC_9TH_GEN" = [1.85, 1.85, 0.075]

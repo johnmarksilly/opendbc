@@ -7,6 +7,8 @@ from opendbc.safety.tests.libsafety import libsafety_py
 import opendbc.safety.tests.common as common
 from opendbc.safety.tests.common import CANPackerSafety
 
+from opendbc.sunnypilot.car.gm.values_ext import GMSafetyFlagsSP
+
 
 class Buttons:
   UNPRESS = 1
@@ -226,6 +228,48 @@ class TestGmCameraLongitudinalSafety(GmLongitudinalBase, TestGmCameraSafetyBase)
 
 class TestGmCameraLongitudinalEVSafety(TestGmCameraLongitudinalSafety, TestGmEVSafetyBase):
   pass
+
+
+class TestGmCameraNonACCSafety(TestGmCameraSafety):
+
+  def setUp(self):
+    self.packer = CANPackerSafety("gm_global_a_powertrain_generated")
+    self.packer_chassis = CANPackerSafety("gm_global_a_chassis")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_current_safety_param_sp(GMSafetyFlagsSP.NON_ACC)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.gm, GMSafetyFlags.HW_CAM | self.EXTRA_SAFETY_PARAM)
+    self.safety.init_tests()
+
+  def _pcm_status_msg(self, enable):
+    values = {"CruiseActive": enable}
+    return self.packer.make_can_msg_safety("ECMCruiseControl", 0, values)
+
+
+class TestGmCameraEVNonACCSafety(TestGmCameraNonACCSafety, TestGmEVSafetyBase):
+  pass
+
+
+class TestGmIgnition(unittest.TestCase):
+  TX_MSGS: list = []
+
+  def setUp(self):
+    self.safety = libsafety_py.libsafety
+    self.safety.init_tests()
+    self.packer = CANPackerSafety("gm_global_a_powertrain_generated")
+
+  def _msg(self, mode):
+    return self.packer.make_can_msg_safety("BCMGeneralPlatformStatus", 0, {"SystemPowerMode": mode})
+
+  # SystemPowerMode 2=Run, 3=Crank Request
+  def test_ignition_on(self):
+    self.safety.ignition_can_hook(self._msg(2))
+    self.assertTrue(self.safety.get_ignition_can())
+
+  def test_ignition_off(self):
+    self.safety.ignition_can_hook(self._msg(2))
+    self.assertTrue(self.safety.get_ignition_can())
+    self.safety.ignition_can_hook(self._msg(0))
+    self.assertFalse(self.safety.get_ignition_can())
 
 
 if __name__ == "__main__":

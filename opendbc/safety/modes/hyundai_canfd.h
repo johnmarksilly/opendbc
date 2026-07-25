@@ -101,9 +101,11 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *msg) {
       if (msg->addr == 0x1cfU) {
         cruise_button = msg->data[2] & 0x7U;
         main_button = GET_BIT(msg, 19U);
+        mads_button_press = GET_BIT(msg, 23U) ? MADS_BUTTON_PRESSED : MADS_BUTTON_NOT_PRESSED;
       } else {
         cruise_button = (msg->data[4] >> 4) & 0x7U;
         main_button = GET_BIT(msg, 34U);
+        mads_button_press = GET_BIT(msg, 39U) ? MADS_BUTTON_PRESSED : MADS_BUTTON_NOT_PRESSED;
       }
       hyundai_common_cruise_buttons_check(cruise_button, main_button);
     }
@@ -144,8 +146,11 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *msg) {
       int cruise_status = ((msg->data[8] >> 4) & 0x7U);
       bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2);
       hyundai_common_cruise_state_check(cruise_engaged);
+      acc_main_on = GET_BIT(msg, 66U);
     }
   }
+
+  hyundai_common_reset_acc_main_on_mismatches();
 }
 
 static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
@@ -179,11 +184,15 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     }
   }
 
-  // cruise buttons check: reject the address that doesn't match the configured flag,
-  // validate cancel/resume on the matching one
-  if ((msg->addr == 0x1cfU) || (msg->addr == 0x1aaU)) {
-    const unsigned int expected_button_addr = hyundai_canfd_alt_buttons ? 0x1aaU : 0x1cfU;
-    if (msg->addr != expected_button_addr) {
+  // cruise buttons check
+  if (msg->addr == 0x1cfU) {
+    int button = msg->data[2] & 0x7U;
+    bool is_cancel = (button == HYUNDAI_BTN_CANCEL);
+    bool is_resume = (button == HYUNDAI_BTN_RESUME);
+    bool is_set = (button == HYUNDAI_BTN_SET);
+
+    bool allowed = (is_cancel && cruise_engaged_prev) || ((is_resume || is_set) && controls_allowed);
+    if (!allowed) {
       tx = false;
     } else {
       int button = 0;
@@ -234,6 +243,9 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     if (violation) {
       tx = false;
     }
+
+    acc_main_on_tx = GET_BIT(msg, 66U);
+    hyundai_common_acc_main_on_sync();
   }
 
   return tx;

@@ -2,6 +2,9 @@
 from opendbc.car.structs import CarParams
 from opendbc.car.honda.values import CAR
 
+from opendbc.sunnypilot.car.fingerprints_ext import merge_fw_versions
+from opendbc.sunnypilot.car.honda.fingerprints_ext import FW_VERSIONS_EXT
+
 Ecu = CarParams.Ecu
 
 # Modified FW can be identified by the second dash being replaced by a comma
@@ -1131,6 +1134,7 @@ FW_VERSIONS = {
       b'8S102-30A-A050\x00\x00',
       b'8S102-30A-A060\x00\x00',
       b'8S102-30A-A070\x00\x00',
+      b'8S102-30A-A080\x00\x00',
     ],
   },
   CAR.HONDA_CRV_6G: {
@@ -1139,6 +1143,7 @@ FW_VERSIONS = {
       b'8S302-3A0-A220\x00\x00',
       b'8S302-3C0-Q050\x00\x00',
       b'8S302-3D4-A050\x00\x00',
+      b'8S302-3D4-A060\x00\x00',
     ],
     (Ecu.fwdCamera, 0x18dab5f1, None): [
       b'8S102-3A0-A070\x00\x00',
@@ -1201,3 +1206,5 @@ FW_VERSIONS = {
     ],
   },
 }
+
+FW_VERSIONS = merge_fw_versions(FW_VERSIONS, FW_VERSIONS_EXT)

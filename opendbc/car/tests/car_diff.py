@@ -68,7 +68,8 @@ def replay_segment(platform: str, can_msgs: list[Any]) -> tuple[structs.CarParam
 
   CarInterface = interfaces[platform]
   CP = CarInterface.get_params(platform, fingerprint, [], False, False, False)
-  CI = CarInterface(CP)
+  CP_SP = CarInterface.get_params_sp(CP, platform, fingerprint, [], False, False, False)
+  CI = CarInterface(CP, CP_SP)
   CC = structs.CarControl().as_reader()
 
   states, timestamps = [], []
@@ -293,8 +294,11 @@ def main(platform: str | None = None, segments_per_platform: int = 10, update_re
   icon = "⚠️" if with_diffs else "✅"
   print(f"\n{icon}  {len(with_diffs)} changed, {n_passed} passed, {len(errors)} errors")
 
-  for plat, seg, err in errors:
-    print(f"\nERROR {plat} - {seg}: {err}")
+  if errors:
+    print("<details><summary><b>Show errors</b></summary>\n\n```")
+    for err in dict.fromkeys(err for _, _, err in errors):
+      print(f"\n{err}")
+    print("```\n</details>")
 
   if with_diffs:
     print("<details><summary><b>Show changes</b></summary>\n\n```")

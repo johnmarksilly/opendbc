@@ -34,8 +34,8 @@ def create_radar_can_parser(car_fingerprint):
 
 
 class RadarInterface(RadarInterfaceBase):
-  def __init__(self, CP):
-    super().__init__(CP)
+  def __init__(self, CP, CP_SP):
+    super().__init__(CP, CP_SP)
 
     self.rcp = None if CP.radarUnavailable else create_radar_can_parser(CP.carFingerprint)
 
@@ -87,8 +87,6 @@ class RadarInterface(RadarInterfaceBase):
         # From driver's pov, left is positive
         self.pts[targetId].yRel = math.sin(cpt['TrkAzimuth'] * CV.DEG_TO_RAD) * distance
         self.pts[targetId].vRel = cpt['TrkRangeRate']
-        self.pts[targetId].aRel = float('nan')
-        self.pts[targetId].yvRel = float('nan')
 
     for oldTarget in list(self.pts.keys()):
       if oldTarget not in currentTargets:

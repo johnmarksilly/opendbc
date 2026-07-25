@@ -20,7 +20,6 @@ def check_fw_version(fw_version: bytes) -> bool:
 
 class TestToyotaInterfaces(unittest.TestCase):
   def test_car_sets(self):
-    # Angle and radar-ACC cars are always TSS2 cars
     assert len(ANGLE_CONTROL_CAR - TSS2_CAR) == 0
     assert len(RADAR_ACC_CAR - TSS2_CAR) == 0
 
