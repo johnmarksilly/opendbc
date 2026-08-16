@@ -25,7 +25,7 @@
   {0x50,  a_can, 16, .check_relay = (a_can) == 0},  /* LKAS */          \
   {0x2A4, a_can, 24, .check_relay = (a_can) == 0},  /* CAM_0x2A4 */     \
 
-#define HYUNDAI_CANFD_LKA_STEER_MSG_ALT_ALT_BUTTONS_COMMON_TX_MSGS(a_can, e_can) \
+#define HYUNDAI_CANFD_LKA_ALT_STEER_MSG_ALT_BUTTONS_COMMON_TX_MSGS(a_can, e_can) \
   HYUNDAI_CANFD_CRUISE_BUTTON_ALT_TX_MSGS(e_can)                        \
   {0x110, a_can, 32, .check_relay = (a_can) == 0},  /* LKAS_ALT */      \
   {0x362, a_can, 32, .check_relay = (a_can) == 0},  /* CAM_0x362 */     \
@@ -265,8 +265,8 @@ static safety_config hyundai_canfd_init(uint16_t param) {
     HYUNDAI_CANFD_LKA_STEER_MSG_ALT_BUTTONS_COMMON_TX_MSGS(0, 1)
   };
 
-  static const CanMsg HYUNDAI_CANFD_LKA_STEER_MSG_ALT_ALT_BUTTONS_TX_MSGS[] = {
-    HYUNDAI_CANFD_LKA_STEER_MSG_ALT_ALT_BUTTONS_COMMON_TX_MSGS(0, 1)
+  static const CanMsg HYUNDAI_CANFD_LKA_ALT_STEER_MSG_ALT_BUTTONS_TX_MSGS[] = {
+    HYUNDAI_CANFD_LKA_ALT_STEER_MSG_ALT_BUTTONS_COMMON_TX_MSGS(0, 1)
   };
 
   static const CanMsg HYUNDAI_CANFD_LKA_STEER_MSG_LONG_TX_MSGS[] = {
@@ -358,7 +358,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
         };
         SET_RX_CHECKS(hyundai_canfd_lka_steer_msg_alt_buttons_rx_checks, ret);
         if (hyundai_canfd_lka_steer_msg_alt) {
-          SET_TX_MSGS(HYUNDAI_CANFD_LKA_STEER_MSG_ALT_ALT_BUTTONS_TX_MSGS, ret);
+          SET_TX_MSGS(HYUNDAI_CANFD_LKA_ALT_STEER_MSG_ALT_BUTTONS_TX_MSGS, ret);
         } else {
           SET_TX_MSGS(HYUNDAI_CANFD_LKA_STEER_MSG_ALT_BUTTONS_TX_MSGS, ret);
         }
