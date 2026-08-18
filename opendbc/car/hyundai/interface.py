@@ -150,6 +150,9 @@ class CarInterface(CarInterfaceBase):
 
     if candidate == CAR.KIA_OPTIMA_G4_FL:
       ret.steerActuatorDelay = 0.2
+    elif candidate == CAR.KIA_CARNIVAL_4TH_GEN and ret.flags & HyundaiFlags.CANFD_LKA_STEER_MSG:
+      # 2025-26 Carnival Hybrid (HDA II) has more steering lag than the 2022-24 HDA I variant
+      ret.steerActuatorDelay = 0.35
 
     # Dashcam cars are missing a test route, or otherwise need validation
     # TODO: Optima Hybrid 2017 uses a different SCC12 checksum
