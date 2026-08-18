@@ -212,7 +212,7 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
 class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanfdLKASteeringEV):
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0], [0x51, 0], [0x730, 1], [0x12a, 1], [0x160, 1],
-             [0x1e0, 1], [0x1a0, 1], [0x1ea, 1], [0x200, 1], [0x345, 1], [0x1da, 1]]
+             [0x1e0, 1], [0x1a0, 1], [0x1ea, 1], [0x200, 1], [0x345, 1], [0x1da, 1], [0x161, 1], [0x162, 1]]
 
   RELAY_MALFUNCTION_ADDRS = {0: (0x50, 0x2a4), 1: (0x1a0,)}  # LKAS, CAM_0x2A4, SCC_CONTROL
 
@@ -364,7 +364,7 @@ class TestHyundaiCanfdLKASteeringAltAltButtonsEV(TestHyundaiCanfdLKASteeringAltE
 class TestHyundaiCanfdLKASteeringLongAltButtonsEV(TestHyundaiCanfdLKASteeringLongEV):
 
   TX_MSGS = [[0x50, 0], [0x1AA, 1], [0x2A4, 0], [0x51, 0], [0x730, 1], [0x12a, 1], [0x160, 1],
-             [0x1e0, 1], [0x1a0, 1], [0x1ea, 1], [0x200, 1], [0x345, 1], [0x1da, 1]]
+             [0x1e0, 1], [0x1a0, 1], [0x1ea, 1], [0x200, 1], [0x345, 1], [0x1da, 1], [0x161, 1], [0x162, 1]]
 
   def setUp(self):
     self.packer = CANPackerSafety("hyundai_canfd_generated")

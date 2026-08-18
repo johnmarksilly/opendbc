@@ -149,6 +149,9 @@ class HyundaiFlags(IntFlag):
 
   ALT_LIMITS_2 = 2 ** 26
 
+  # Connected Car Navigation Cockpit HUD/cluster (HDA II)
+  CCNC = 2 ** 27
+
 
 @dataclass
 class HyundaiCarDocs(CarDocs):

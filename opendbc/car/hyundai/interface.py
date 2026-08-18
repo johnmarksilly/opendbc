@@ -62,6 +62,11 @@ class CarInterface(CarInterfaceBase):
         if not ret.flags & HyundaiFlags.CANFD_RADAR_SCC:
           ret.flags |= HyundaiFlags.CANFD_CAMERA_SCC.value
 
+      # The 2025-26 Carnival Hybrid (HDA II) uses the CCNC cluster; the 2022-24 HDA I variant
+      # shares this platform but is not LKA steering, so gate CCNC on the HDA II detection.
+      if candidate == CAR.KIA_CARNIVAL_4TH_GEN and lka_steering:
+        ret.flags |= HyundaiFlags.CCNC.value
+
       # ALT_BUTTONS (0x1aa) on cars without 0x1cf — applies to both LKA-steering and non-LKA-steering CAN-FD
       if 0x1cf not in fingerprint[CAN.ECAN]:
         ret.flags |= HyundaiFlags.CANFD_ALT_BUTTONS.value
