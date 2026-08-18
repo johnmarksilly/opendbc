@@ -74,6 +74,7 @@ def create_suppress_lfa(packer, CAN, lfa_block_msg, lka_steering_alt):
 
 
 def create_buttons(packer, CP, CAN, cnt, btn):
+  msg = "CRUISE_BUTTONS_ALT" if CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS else "CRUISE_BUTTONS"
   values = {
     "COUNTER": cnt,
     "SET_ME_1": 1,
@@ -81,7 +82,7 @@ def create_buttons(packer, CP, CAN, cnt, btn):
   }
 
   bus = CAN.ECAN if CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG else CAN.CAM
-  return packer.make_can_msg("CRUISE_BUTTONS", bus, values)
+  return packer.make_can_msg(msg, bus, values)
 
 
 def create_acc_cancel(packer, CP, CAN, cruise_info_copy):
