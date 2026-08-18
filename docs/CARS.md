@@ -278,6 +278,7 @@
 |Mazda|CX-5 2022-25|All|[Upstream](#upstream)|
 |Mazda|CX-9 2016-20|All|[Dashcam mode](#dashcam)|
 |Mazda|CX-9 2021-23|All|[Upstream](#upstream)|
+|MG|5 EV 2021|All|[Dashcam mode](#dashcam)|
 |Nissan|Altima 2019-24|ProPILOT Assist|[Upstream](#upstream)|
 |Nissan|Leaf 2018-23|ProPILOT Assist|[Upstream](#upstream)|
 |Nissan|Leaf IC 2018-23|ProPILOT Assist|[Upstream](#upstream)|

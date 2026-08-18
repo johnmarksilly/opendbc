@@ -185,7 +185,8 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     }
   }
 
-  // cruise buttons check — handle both standard (0x1CF) and alt (0x1AA) button addresses
+  // cruise buttons check — handle both standard (0x1CF) and alt (0x1AA) addresses,
+  // and reject tx when message doesn't match the configured button address
   if ((msg->addr == 0x1cfU) || (msg->addr == 0x1aaU)) {
     const unsigned int expected_button_addr = hyundai_canfd_alt_buttons ? 0x1aaU : 0x1cfU;
     if (msg->addr != expected_button_addr) {
