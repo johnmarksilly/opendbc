@@ -38,7 +38,6 @@ non_tested_cars = [
   TOYOTA.TOYOTA_RAV4H,
 
   # port extensions
-  HYUNDAI.KIA_CEED_PHEV_2022_NON_SCC,
   HYUNDAI.HYUNDAI_KONA_EV_NON_SCC,
   HYUNDAI.HYUNDAI_BAYON_1ST_GEN_NON_SCC,
   HYUNDAI.HYUNDAI_ELANTRA_2022_NON_SCC,
@@ -176,6 +175,7 @@ routes = [
   CarTestRoute("656ac0d830792fcc/2021-12-28--14-45-56", HYUNDAI.HYUNDAI_SANTA_FE_PHEV_2022, segment=1),
   CarTestRoute("de59124955b921d8/2023-06-24--00-12-50", HYUNDAI.KIA_CARNIVAL_4TH_GEN),
   CarTestRoute("409c9409979a8abc/2023-07-11--09-06-44", HYUNDAI.KIA_CARNIVAL_4TH_GEN),  # Chinese model
+  CarTestRoute("64884eacd32fec89/0000009c--f9ab362581", HYUNDAI.KIA_CARNIVAL_4TH_GEN, segment=12),  # 2026 Hybrid (HDA II)
   CarTestRoute("e0e98335f3ebc58f/2021-03-07--16-38-29", HYUNDAI.KIA_CEED),
   CarTestRoute("7653b2bce7bcfdaa/2020-03-04--15-34-32", HYUNDAI.KIA_OPTIMA_G4),
   CarTestRoute("018654717bc93d7d/2022-09-19--23-11-10", HYUNDAI.KIA_OPTIMA_G4_FL, segment=0),
@@ -388,4 +388,7 @@ routes = [
   # Segments that test specific issues
   # Controls mismatch due to standstill threshold
   CarTestRoute("bec2dcfde6a64235/2022-04-08--14-21-32", HONDA.HONDA_CRV_HYBRID, segment=22),
+
+  # port extensions
+  CarTestRoute("dc7bf18c8af12e37/00000006--ea06255cd0", HYUNDAI.KIA_CEED_PHEV_2022_NON_SCC),
 ]
