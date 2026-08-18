@@ -5,8 +5,6 @@ from opendbc.car.psa.values import DBC, CarControllerParams
 from opendbc.car.interfaces import CarStateBase
 
 GearShifter = structs.CarState.GearShifter
-TransmissionType = structs.CarParams.TransmissionType
-
 
 class CarState(CarStateBase):
   def update(self, can_parsers) -> structs.CarState:
@@ -14,6 +12,7 @@ class CarState(CarStateBase):
     cp_adas = can_parsers[Bus.adas]
     cp_cam = can_parsers[Bus.cam]
     ret = structs.CarState()
+    ret_sp = structs.CarStateSP()
 
     # car speed
     self.parse_wheel_speeds(ret,
@@ -62,10 +61,10 @@ class CarState(CarStateBase):
     # lock info
     ret.doorOpen = any((cp_cam.vl['Dat_BSI']['DRIVER_DOOR'], cp_cam.vl['Dat_BSI']['PASSENGER_DOOR']))
     ret.seatbeltUnlatched = cp_cam.vl['RESTRAINTS']['DRIVER_SEATBELT'] != 2
-    return ret
+    return ret, ret_sp
 
   @staticmethod
-  def get_can_parsers(CP):
+  def get_can_parsers(CP, CP_SP):
     return {
       Bus.main: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
       Bus.adas: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 1),

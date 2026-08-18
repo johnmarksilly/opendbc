@@ -11,7 +11,7 @@ def checksum(data, poly, xor_output):
   return crc ^ xor_output
 
 
-def create_lka_steering(packer, frame, acm_lka_hba_cmd, apply_torque, enabled, active):
+def create_lka_steering(packer, frame, acm_lka_hba_cmd, apply_torque, enabled, active, mads):
   # forward auto high beam and speed limit status and nothing else
   values = {s: acm_lka_hba_cmd[s] for s in (
     "ACM_hbaSysState",
@@ -23,10 +23,10 @@ def create_lka_steering(packer, frame, acm_lka_hba_cmd, apply_torque, enabled, a
   values |= {
     "ACM_lkaHbaCmd_Counter": frame % 15,  # 0-14 counter (15 states), so % 15 is correct despite the 4-bit field
     "ACM_lkaStrToqReq": apply_torque,
-    "ACM_lkaActToi": active,
+    "ACM_lkaActToi": mads.lat_active,
 
-    "ACM_lkaLaneRecogState": 3 if enabled else 0,
-    "ACM_lkaSymbolState": 3 if enabled else 0,
+    "ACM_lkaLaneRecogState": 3 if mads.lka_icon_states else 0,
+    "ACM_lkaSymbolState": 3 if mads.lka_icon_states else 0,
 
     # static values
     "ACM_lkaElkRequest": 0,
@@ -47,8 +47,9 @@ def create_wheel_touch(packer, sccm_wheel_touch, enabled):
   values = {s: sccm_wheel_touch[s] for s in (
     "SCCM_WheelTouch_Counter",
     "SCCM_WheelTouch_HandsOn",
+    "SCCM_WheelTouch_Calibration",
     "SCCM_WheelTouch_CapacitiveValue",
-    "SETME_X52",
+    "SCCM_WheelTouch_ResistiveValue",
   )}
 
   # When only using ACC without lateral, the ACM warns the driver to hold the steering wheel on engagement

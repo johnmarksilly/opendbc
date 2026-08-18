@@ -78,7 +78,7 @@ class CAR(Platforms):
   )
 
   JEEP_GRAND_CHEROKEE_2019 = ChryslerPlatformConfig(  # includes 2020 Trailhawk
-    [ChryslerCarDocs("Jeep Grand Cherokee 2019-21", video="https://www.youtube.com/watch?v=jBe4lWnRSu4")],
+    [ChryslerCarDocs("Jeep Grand Cherokee 2019-21")],
     JEEP_GRAND_CHEROKEE.specs,
   )
 
@@ -109,7 +109,7 @@ class CarControllerParams:
     elif CP.carFingerprint in RAM_DT:
       self.STEER_DELTA_UP = 6
       self.STEER_DELTA_DOWN = 6
-      self.STEER_MAX = 261  # EPS allows more, up to 350?
+      self.STEER_MAX = 350  # EPS allows more, up to 350?
     elif CP.carFingerprint in CUSW_CARS:
       self.STEER_STEP = 1  # 100 Hz
       self.STEER_DELTA_UP = 4
@@ -142,6 +142,7 @@ CHRYSLER_SOFTWARE_VERSION_RESPONSE = bytes([uds.SERVICE_TYPE.READ_DATA_BY_IDENTI
 CHRYSLER_RX_OFFSET = -0x280
 
 FW_QUERY_CONFIG = FwQueryConfig(
+  fw_version_regex=br"[A-Z0-9_]{10} ?",
   requests=[
     Request(
       [CHRYSLER_VERSION_REQUEST],
