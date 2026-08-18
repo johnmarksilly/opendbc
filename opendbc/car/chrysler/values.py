@@ -10,13 +10,14 @@ Ecu = CarParams.Ecu
 
 
 class ChryslerSafetyFlags(IntFlag):
-  FLAG_CHRYSLER_RAM_DT = 1
-  FLAG_CHRYSLER_RAM_HD = 2
+  RAM_DT = 1
+  RAM_HD = 2
 
 
 class ChryslerFlags(IntFlag):
   # Detected flags
   HIGHER_MIN_STEERING_SPEED = 1
+
 
 @dataclass
 class ChryslerCarDocs(CarDocs):
@@ -44,7 +45,7 @@ class CAR(Platforms):
     ChryslerCarSpecs(mass=2242., wheelbase=3.089, steerRatio=16.2),
   )
   CHRYSLER_PACIFICA_2019_HYBRID = ChryslerPlatformConfig(
-    [ChryslerCarDocs("Chrysler Pacifica Hybrid 2019-24")],
+    [ChryslerCarDocs("Chrysler Pacifica Hybrid 2019-25")],
     CHRYSLER_PACIFICA_2018_HYBRID.specs,
   )
   CHRYSLER_PACIFICA_2018 = ChryslerPlatformConfig(
@@ -66,13 +67,18 @@ class CAR(Platforms):
   )
 
   # Jeep
+  JEEP_CHEROKEE_5TH_GEN = ChryslerPlatformConfig(
+    [ChryslerCarDocs("Jeep Cherokee 2019-23")],
+    ChryslerCarSpecs(mass=1747., wheelbase=2.70, steerRatio=17.0, minSteerSpeed=18.5),
+    {Bus.pt: 'chrysler_cusw'},
+  )
   JEEP_GRAND_CHEROKEE = ChryslerPlatformConfig(  # includes 2017 Trailhawk
-    [ChryslerCarDocs("Jeep Grand Cherokee 2016-18", video_link="https://www.youtube.com/watch?v=eLR9o2JkuRk")],
+    [ChryslerCarDocs("Jeep Grand Cherokee 2016-18", video="https://www.youtube.com/watch?v=eLR9o2JkuRk")],
     ChryslerCarSpecs(mass=1778., wheelbase=2.71, steerRatio=16.7),
   )
 
   JEEP_GRAND_CHEROKEE_2019 = ChryslerPlatformConfig(  # includes 2020 Trailhawk
-    [ChryslerCarDocs("Jeep Grand Cherokee 2019-21", video_link="https://www.youtube.com/watch?v=jBe4lWnRSu4")],
+    [ChryslerCarDocs("Jeep Grand Cherokee 2019-21")],
     JEEP_GRAND_CHEROKEE.specs,
   )
 
@@ -103,7 +109,12 @@ class CarControllerParams:
     elif CP.carFingerprint in RAM_DT:
       self.STEER_DELTA_UP = 6
       self.STEER_DELTA_DOWN = 6
-      self.STEER_MAX = 261  # EPS allows more, up to 350?
+      self.STEER_MAX = 350  # EPS allows more, up to 350?
+    elif CP.carFingerprint in CUSW_CARS:
+      self.STEER_STEP = 1  # 100 Hz
+      self.STEER_DELTA_UP = 4
+      self.STEER_DELTA_DOWN = 4
+      self.STEER_MAX = 250  # TODO: Some CUSW will go to 261, some not quite, exact boundaries not yet determined
     else:
       self.STEER_DELTA_UP = 3
       self.STEER_DELTA_DOWN = 3
@@ -115,6 +126,7 @@ STEER_THRESHOLD = 120
 RAM_DT = {CAR.RAM_1500_5TH_GEN, }
 RAM_HD = {CAR.RAM_HD_5TH_GEN, }
 RAM_CARS = RAM_DT | RAM_HD
+CUSW_CARS = {CAR.JEEP_CHEROKEE_5TH_GEN, }
 
 
 CHRYSLER_VERSION_REQUEST = bytes([uds.SERVICE_TYPE.READ_DATA_BY_IDENTIFIER]) + \
@@ -130,6 +142,7 @@ CHRYSLER_SOFTWARE_VERSION_RESPONSE = bytes([uds.SERVICE_TYPE.READ_DATA_BY_IDENTI
 CHRYSLER_RX_OFFSET = -0x280
 
 FW_QUERY_CONFIG = FwQueryConfig(
+  fw_version_regex=br"[A-Z0-9_]{10} ?",
   requests=[
     Request(
       [CHRYSLER_VERSION_REQUEST],
