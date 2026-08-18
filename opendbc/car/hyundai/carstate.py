@@ -305,6 +305,9 @@ class CarState(CarStateBase, EsccCarStateBase, MadsCarState, CarStateExt):
       self.lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG_ALT
                                           else cp_cam.vl["CAM_0x2a4"])
 
+    # On non-HDA2 CCNC cars the ADAS ECU still generates 0x161/0x162, so we passthrough and mutate
+    # the received copies. On HDA2 (LKA steering) cars that ECU is suppressed, so these stay empty
+    # and create_ccnc() builds the messages from scratch.
     if self.CP.flags & HyundaiFlags.CCNC and not self.CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG:
       self.ccnc_161 = copy.copy(cp_cam.vl["CCNC_0x161"])
       self.ccnc_162 = copy.copy(cp_cam.vl["CCNC_0x162"])

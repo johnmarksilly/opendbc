@@ -285,6 +285,8 @@ def create_ccnc(packer, CAN, CP, CC, CS):
     msg_161.update({
       "SETSPEED": 3 if enabled else 1,
       "SETSPEED_HUD": 2 if enabled else 1,
+      # SETSPEED_SPEED is the cluster's numeric set-speed readout; out-of-range values (> 100) fall
+      # back to a fixed placeholder rather than displaying a wrapped/garbage number.
       "SETSPEED_SPEED": 25 if set_speed > 100 else set_speed,
       "DISTANCE": hud.leadDistanceBars,
       "DISTANCE_SPACING": 1 if enabled else 0,
