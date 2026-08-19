@@ -68,6 +68,7 @@ class HyundaiSafetyFlags(IntFlag):
   CANFD_LKA_STEER_MSG_ALT = 128
   FCEV_GAS = 256
   ALT_LIMITS_2 = 512
+  CCNC = 1024
 
 
 # Hyundai/Kia/Genesis SCC (Smart Cruise Control) and steering architecture:
@@ -148,6 +149,12 @@ class HyundaiFlags(IntFlag):
   FCEV = 2 ** 25
 
   ALT_LIMITS_2 = 2 ** 26
+
+  # Camera-Cluster-Navigation-Cluster (CCNC): newer HKG cluster display (e.g. 2025+ Kia Carnival HDA II)
+  CCNC = 2 ** 27
+
+  # Some ICE cars are falsely detected as HYBRID; set this to override that detection.
+  ICE = 2 ** 28
 
 
 @dataclass
@@ -569,10 +576,27 @@ class CAR(Platforms):
     [
       HyundaiCarDocs("Kia Carnival 2022-24", car_parts=CarParts.common([CarHarness.hyundai_a])),
       HyundaiCarDocs("Kia Carnival (China only) 2023", car_parts=CarParts.common([CarHarness.hyundai_k])),
-      HyundaiCarDocs("Kia Carnival Hybrid (with HDA II) 2025-26", "Highway Driving Assist II", car_parts=CarParts.common([CarHarness.hyundai_q])),
     ],
     CarSpecs(mass=2087, wheelbase=3.09, steerRatio=14.23),
     flags=HyundaiFlags.CANFD_RADAR_SCC,
+  )
+  # 2025+ Carnival uses the CCNC cluster architecture with camera-based SCC (no RADAR_SCC),
+  # which enables openpilot longitudinal via the camera.
+  KIA_CARNIVAL_HEV_4TH_GEN = HyundaiCanFDPlatformConfig(
+    [
+      HyundaiCarDocs("Kia Carnival Hybrid 2025", car_parts=CarParts.common([CarHarness.hyundai_k])),
+      HyundaiCarDocs("Kia Carnival Hybrid (with HDA II) 2025-26", "Highway Driving Assist II", car_parts=CarParts.common([CarHarness.hyundai_q])),
+    ],
+    CarSpecs(mass=2253, wheelbase=3.09, steerRatio=14.23),
+    flags=HyundaiFlags.CCNC,
+  )
+  KIA_CARNIVAL_2025 = HyundaiCanFDPlatformConfig(
+    [
+      HyundaiCarDocs("Kia Carnival 2025", car_parts=CarParts.common([CarHarness.hyundai_k])),
+      HyundaiCarDocs("Kia Carnival (with HDA II) 2025", "Highway Driving Assist II", car_parts=CarParts.common([CarHarness.hyundai_q])),
+    ],
+    CarSpecs(mass=2087, wheelbase=3.09, steerRatio=14.23),
+    flags=HyundaiFlags.ICE | HyundaiFlags.CCNC,
   )
 
   # Genesis
@@ -782,8 +806,7 @@ PART_NUMBER_FW_PATTERN = re.compile(b'(?<=[0-9][.,][0-9]{2} )([0-9]{5}[-/]?[A-Z]
 # We've seen both ICE and hybrid for these platforms, and they have hybrid descriptors (e.g. MQ4 vs MQ4H)
 CANFD_FUZZY_WHITELIST = {CAR.KIA_SORENTO_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.KIA_K8_HEV_1ST_GEN,
                          CAR.KIA_SPORTAGE_5TH_GEN,
-                         # TODO: the hybrid variant is not out yet
-                         CAR.KIA_CARNIVAL_4TH_GEN}
+                         CAR.KIA_CARNIVAL_4TH_GEN, CAR.KIA_CARNIVAL_HEV_4TH_GEN, CAR.KIA_CARNIVAL_2025}
 
 # List of ECUs expected to have platform codes, camera and radar should exist on all cars
 # TODO: use abs, it has the platform code and part number on many platforms

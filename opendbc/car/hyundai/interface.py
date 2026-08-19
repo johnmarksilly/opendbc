@@ -49,7 +49,8 @@ class CarInterface(CarInterfaceBase):
       ret.enableBsm = 0x1ba in fingerprint[CAN.ECAN]
 
       # Check if the car is hybrid. Only HEV/PHEV cars have 0xFA on E-CAN.
-      if 0xFA in fingerprint[CAN.ECAN]:
+      # Some ICE cars also have 0xFA and are falsely detected as hybrid; the ICE flag overrides that.
+      if 0xFA in fingerprint[CAN.ECAN] and not ret.flags & HyundaiFlags.ICE:
         ret.flags |= HyundaiFlags.HYBRID.value
 
       if lka_steering:
@@ -87,6 +88,8 @@ class CarInterface(CarInterfaceBase):
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CANFD_ALT_BUTTONS.value
       if ret.flags & HyundaiFlags.CANFD_CAMERA_SCC:
         ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
+      if ret.flags & HyundaiFlags.CCNC:
+        ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CCNC.value
 
     else:
       # Shared configuration for non CAN-FD cars
@@ -150,6 +153,8 @@ class CarInterface(CarInterfaceBase):
 
     if candidate == CAR.KIA_OPTIMA_G4_FL:
       ret.steerActuatorDelay = 0.2
+    elif candidate == CAR.KIA_CARNIVAL_HEV_4TH_GEN:
+      ret.steerActuatorDelay = 0.35
 
     # Dashcam cars are missing a test route, or otherwise need validation
     # TODO: Optima Hybrid 2017 uses a different SCC12 checksum

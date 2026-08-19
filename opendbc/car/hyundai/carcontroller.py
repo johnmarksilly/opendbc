@@ -211,7 +211,9 @@ class CarController(CarControllerBase, EsccCarController, LeadDataCarController,
 
     # LFA and HDA icons
     if self.frame % 5 == 0 and (not lka_steering or lka_steering_long):
-      can_sends.append(hyundaicanfd.create_lfahda_cluster(self.packer, self.CAN, CC.enabled, self.lfa_icon))
+      can_sends.append(hyundaicanfd.create_lfahda_cluster(self.packer, self.CAN, self.CP, CC.enabled, self.lfa_icon))
+      if self.CP.flags & HyundaiFlags.CCNC:
+        can_sends.extend(hyundaicanfd.create_ccnc(self.packer, self.CAN, self.CP, CC, CS))
 
     # blinkers
     if lka_steering and self.CP.flags & HyundaiFlags.CANFD_ENABLE_BLINKERS:
@@ -229,10 +231,14 @@ class CarController(CarControllerBase, EsccCarController, LeadDataCarController,
     else:
       # button presses
       if (self.frame - self.last_button_frame) * DT_CTRL > 0.25:
+        alt_buttons = self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS
+        # CCNC platforms (e.g. 2025 Kia Carnival) expose the alt cruise button to openpilot,
+        # so they cancel/resume via buttons. Other alt-button cars cannot transmit the button.
+        ccnc = self.CP.flags & HyundaiFlags.CCNC
         # cruise cancel
         if CC.cruiseControl.cancel:
-          # Here we send ACC message to cancel, not buttons. Don't delay
-          if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
+          if alt_buttons and not ccnc:
+            # Here we send ACC message to cancel, not buttons. Don't delay
             can_sends.append(hyundaicanfd.create_acc_cancel(self.packer, self.CP, self.CAN, CS.cruise_info))
             self.last_button_frame = self.frame
           elif self.cancel_counter > CANCEL_BUTTON_DELAY_FRAMES:
@@ -242,10 +248,9 @@ class CarController(CarControllerBase, EsccCarController, LeadDataCarController,
 
         # cruise standstill resume
         elif CC.cruiseControl.resume:
-          if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
-            # TODO: resume for alt button cars
-            pass
-          else:
+          # Alt-button cars can only resume via buttons on platforms where openpilot is allowed
+          # to transmit the alt cruise button (CCNC). Other alt-button cars have no resume support.
+          if not alt_buttons or ccnc:
             for _ in range(20):
               can_sends.append(hyundaicanfd.create_buttons(self.packer, self.CP, self.CAN, CS.buttons_counter + 1, Buttons.RES_ACCEL))
             self.last_button_frame = self.frame

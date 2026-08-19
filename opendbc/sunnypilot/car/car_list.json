@@ -2029,6 +2029,16 @@
     ],
     "package": "Smart Cruise Control (SCC)"
   },
+  "Kia Carnival 2025": {
+    "platform": "KIA_CARNIVAL_2025",
+    "make": "Kia",
+    "brand": "hyundai",
+    "model": "Carnival",
+    "year": [
+      "2025"
+    ],
+    "package": "Smart Cruise Control (SCC)"
+  },
   "Kia Carnival (China only) 2023": {
     "platform": "KIA_CARNIVAL_4TH_GEN",
     "make": "Kia",
@@ -2040,7 +2050,7 @@
     "package": "Smart Cruise Control (SCC)"
   },
   "Kia Carnival (with HDA II) 2025": {
-    "platform": "KIA_CARNIVAL_4TH_GEN",
+    "platform": "KIA_CARNIVAL_2025",
     "make": "Kia",
     "brand": "hyundai",
     "model": "Carnival (with HDA II)",
@@ -2049,8 +2059,18 @@
     ],
     "package": "Highway Driving Assist II"
   },
+  "Kia Carnival Hybrid 2025": {
+    "platform": "KIA_CARNIVAL_HEV_4TH_GEN",
+    "make": "Kia",
+    "brand": "hyundai",
+    "model": "Carnival Hybrid",
+    "year": [
+      "2025"
+    ],
+    "package": "Smart Cruise Control (SCC)"
+  },
   "Kia Carnival Hybrid (with HDA II) 2025-26": {
-    "platform": "KIA_CARNIVAL_4TH_GEN",
+    "platform": "KIA_CARNIVAL_HEV_4TH_GEN",
     "make": "Kia",
     "brand": "hyundai",
     "model": "Carnival Hybrid (with HDA II)",

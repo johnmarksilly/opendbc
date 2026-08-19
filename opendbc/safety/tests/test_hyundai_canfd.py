@@ -387,5 +387,58 @@ class TestHyundaiCanfdLKASteeringLongAltButtonsEV(TestHyundaiCanfdLKASteeringLon
     return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT", self.PT_BUS, values)
 
 
+# Camera-SCC + ALT_BUTTONS + CCNC cluster (e.g. 2025+ Kia Carnival). openpilot transmits the
+# CCNC cluster messages (0x161/0x162) to override the camera's, and can send ALT_BUTTONS (0x1AA).
+class TestHyundaiCanfdLFASteeringAltButtonsCCNC(TestHyundaiCanfdLFASteeringBase):
+
+  TX_MSGS = [[0x12A, 0], [0x1A0, 1], [0x1AA, 2], [0x1E0, 0], [0x160, 0], [0x161, 0], [0x162, 0]]
+  RELAY_MALFUNCTION_ADDRS = {0: (0x12A, 0x1E0, 0x161, 0x162)}  # LFA, LFAHDA_CLUSTER, CCNC_0x161, CCNC_0x162
+  FWD_BLACKLISTED_ADDRS = {2: [0x12A, 0x1E0, 0x161, 0x162]}
+  GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
+
+  def setUp(self):
+    self.packer = CANPackerSafety("hyundai_canfd_generated")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd,
+                                 HyundaiSafetyFlags.CANFD_ALT_BUTTONS |
+                                 HyundaiSafetyFlags.CAMERA_SCC |
+                                 HyundaiSafetyFlags.CCNC |
+                                 HyundaiSafetyFlags.EV_GAS)
+    self.safety.init_tests()
+
+  def _button_msg(self, buttons, main_button=0, bus=None):
+    if bus is None:
+      bus = self.PT_BUS
+    values = {"CRUISE_BUTTONS": buttons, "ADAPTIVE_CRUISE_MAIN_BTN": main_button}
+    return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT", bus, values)
+
+  def _lkas_button_msg(self, enabled):
+    values = {"LDA_BTN": enabled}
+    return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT", self.PT_BUS, values)
+
+
+class TestHyundaiCanfdLFASteeringLongAltButtonsCCNC(TestHyundaiCanfdLFASteeringLongBase, TestHyundaiCanfdLFASteeringAltButtonsBase):
+
+  TX_MSGS = [[0x12A, 0], [0x1A0, 0], [0x1AA, 2], [0x1E0, 0], [0x160, 0], [0x161, 0], [0x162, 0]]
+  RELAY_MALFUNCTION_ADDRS = {0: (0x12A, 0x1E0, 0x1A0, 0x160, 0x161, 0x162)}
+  FWD_BLACKLISTED_ADDRS = {2: [0x12A, 0x1E0, 0x1A0, 0x160, 0x161, 0x162]}
+  GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
+
+  def setUp(self):
+    self.packer = CANPackerSafety("hyundai_canfd_generated")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd,
+                                 HyundaiSafetyFlags.LONG |
+                                 HyundaiSafetyFlags.CANFD_ALT_BUTTONS |
+                                 HyundaiSafetyFlags.CAMERA_SCC |
+                                 HyundaiSafetyFlags.CCNC |
+                                 HyundaiSafetyFlags.EV_GAS)
+    self.safety.init_tests()
+
+  def test_acc_cancel(self):
+    # Alt buttons does not use SCC_CONTROL to cancel if longitudinal
+    pass
+
+
 if __name__ == "__main__":
   unittest.main()
