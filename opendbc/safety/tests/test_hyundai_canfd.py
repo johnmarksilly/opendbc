@@ -417,5 +417,28 @@ class TestHyundaiCanfdLFASteeringAltButtonsCCNC(TestHyundaiCanfdLFASteeringBase)
     return self.packer.make_can_msg_safety("CRUISE_BUTTONS_ALT", self.PT_BUS, values)
 
 
+class TestHyundaiCanfdLFASteeringLongAltButtonsCCNC(TestHyundaiCanfdLFASteeringLongBase, TestHyundaiCanfdLFASteeringAltButtonsBase):
+
+  TX_MSGS = [[0x12A, 0], [0x1A0, 0], [0x1AA, 2], [0x1E0, 0], [0x160, 0], [0x161, 0], [0x162, 0]]
+  RELAY_MALFUNCTION_ADDRS = {0: (0x12A, 0x1E0, 0x1A0, 0x160, 0x161, 0x162)}
+  FWD_BLACKLISTED_ADDRS = {2: [0x12A, 0x1E0, 0x1A0, 0x160, 0x161, 0x162]}
+  GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
+
+  def setUp(self):
+    self.packer = CANPackerSafety("hyundai_canfd_generated")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd,
+                                 HyundaiSafetyFlags.LONG |
+                                 HyundaiSafetyFlags.CANFD_ALT_BUTTONS |
+                                 HyundaiSafetyFlags.CAMERA_SCC |
+                                 HyundaiSafetyFlags.CCNC |
+                                 HyundaiSafetyFlags.EV_GAS)
+    self.safety.init_tests()
+
+  def test_acc_cancel(self):
+    # Alt buttons does not use SCC_CONTROL to cancel if longitudinal
+    pass
+
+
 if __name__ == "__main__":
   unittest.main()
