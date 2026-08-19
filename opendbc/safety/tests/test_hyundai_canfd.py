@@ -394,6 +394,7 @@ class TestHyundaiCanfdLFASteeringAltButtonsCCNC(TestHyundaiCanfdLFASteeringBase)
   TX_MSGS = [[0x12A, 0], [0x1A0, 1], [0x1AA, 2], [0x1E0, 0], [0x160, 0], [0x161, 0], [0x162, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x12A, 0x1E0, 0x161, 0x162)}  # LFA, LFAHDA_CLUSTER, CCNC_0x161, CCNC_0x162
   FWD_BLACKLISTED_ADDRS = {2: [0x12A, 0x1E0, 0x161, 0x162]}
+  GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
 
   def setUp(self):
     self.packer = CANPackerSafety("hyundai_canfd_generated")
