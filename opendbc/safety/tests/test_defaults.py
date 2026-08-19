@@ -2,12 +2,13 @@
 import unittest
 
 import opendbc.safety.tests.common as common
-
-from opendbc.safety import Safety
+from opendbc.car.structs import CarParams
 from opendbc.safety.tests.libsafety import libsafety_py
 
 
-class TestDefaultRxHookBase(common.PandaSafetyTest):
+class TestDefaultRxHookBase(common.SafetyTest):
+  FWD_BUS_LOOKUP = {}
+
   def test_rx_hook(self):
     # default rx hook allows all msgs
     for bus in range(4):
@@ -20,7 +21,7 @@ class TestNoOutput(TestDefaultRxHookBase):
 
   def setUp(self):
     self.safety = libsafety_py.libsafety
-    self.safety.set_safety_hooks(Safety.SAFETY_NOOUTPUT, 0)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.noOutput, 0)
     self.safety.init_tests()
 
 
@@ -29,18 +30,18 @@ class TestSilent(TestNoOutput):
 
   def setUp(self):
     self.safety = libsafety_py.libsafety
-    self.safety.set_safety_hooks(Safety.SAFETY_SILENT, 0)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.silent, 0)
     self.safety.init_tests()
 
 
 class TestAllOutput(TestDefaultRxHookBase):
   # Allow all messages
-  TX_MSGS = [[addr, bus] for addr in common.PandaSafetyTest.SCANNED_ADDRS
+  TX_MSGS = [[addr, bus] for addr in common.SafetyTest.SCANNED_ADDRS
              for bus in range(4)]
 
   def setUp(self):
     self.safety = libsafety_py.libsafety
-    self.safety.set_safety_hooks(Safety.SAFETY_ALLOUTPUT, 0)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.allOutput, 0)
     self.safety.init_tests()
 
   def test_spam_can_buses(self):
@@ -65,7 +66,7 @@ class TestAllOutputPassthrough(TestAllOutput):
 
   def setUp(self):
     self.safety = libsafety_py.libsafety
-    self.safety.set_safety_hooks(Safety.SAFETY_ALLOUTPUT, 1)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.allOutput, 1)
     self.safety.init_tests()
 
 
