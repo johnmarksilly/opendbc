@@ -1033,6 +1033,10 @@ class SafetyTest(SafetyTestBase):
             if attr.startswith('TestHyundaiCanfdLKASteeringLong') and current_test.startswith('TestToyota'):
               tx = list(filter(lambda m: m[0] not in [0x160, ], tx))
 
+            # Hyundai CCNC cluster message (0x161) overlaps with the Subaru Preglobal ES_Distance message
+            if attr == 'TestHyundaiCanfdLFASteeringAltButtonsCCNC' and current_test.startswith('TestSubaruPreglobal'):
+              tx = list(filter(lambda m: m[0] not in [0x161, ], tx))
+
             # Volkswagen MQB longitudinal actuating message overlaps with the Subaru lateral actuating message
             if attr == 'TestVolkswagenMqbLongSafety' and current_test.startswith('TestSubaru'):
               tx = list(filter(lambda m: m[0] not in [0x122, ], tx))
