@@ -24,6 +24,40 @@ T_FOLLOW = {1: 1.25, 2: 1.45, 3: 1.75}  # s
 TARGET_DISTANCE_MAX = 204.6  # m
 LEAD_FILTER_RC = 0.5  # s
 
+CCNC_CLUSTER_TRACK_SIGNALS = {
+  "lead": ("LEAD", "LEAD_DISTANCE", "LEAD_LATERAL"),
+  "lead_alt": ("LEAD_ALT", "LEAD_ALT_DISTANCE", "LEAD_ALT_LATERAL"),
+  "lead_left": ("LEAD_LEFT", "LEAD_LEFT_DISTANCE", "LEAD_LEFT_LATERAL"),
+  "lead_right": ("LEAD_RIGHT", "LEAD_RIGHT_DISTANCE", "LEAD_RIGHT_LATERAL"),
+  "lead_left_rear": ("LEAD_LEFT_REAR_STATUS", "LEAD_LEFT_REAR_DISTANCE", "LEAD_LEFT_REAR_LATERAL"),
+  "lead_right_rear": ("LEAD_RIGHT_REAR_STATUS", "LEAD_RIGHT_REAR_DISTANCE", "LEAD_RIGHT_REAR_LATERAL"),
+}
+CCNC_CLUSTER_ACTIVE_SLOTS = ("lead", "lead_left", "lead_right")
+CCNC_CLUSTER_TRACK_LATERAL = {
+  "lead": 0.0,
+  "lead_alt": 0.0,
+  "lead_left": 3.0,
+  "lead_right": 3.0,
+}
+CCNC_CLUSTER_TRACK_DISTANCE_MAX = 204.7  # m
+CCNC_CLUSTER_REAR_TRACK_DISTANCE_MAX = 25.5  # m
+
+
+def update_ccnc_cluster_tracks(values_162, cluster_track_slots, matched_track_ids):
+  for status_signal, distance_signal, lateral_signal in CCNC_CLUSTER_TRACK_SIGNALS.values():
+    values_162.update({status_signal: 0, distance_signal: 0, lateral_signal: 0})
+
+  for slot, track in cluster_track_slots.items():
+    if slot not in CCNC_CLUSTER_ACTIVE_SLOTS:
+      continue
+    status_signal, distance_signal, lateral_signal = CCNC_CLUSTER_TRACK_SIGNALS[slot]
+    max_distance = CCNC_CLUSTER_REAR_TRACK_DISTANCE_MAX if slot.endswith("rear") else CCNC_CLUSTER_TRACK_DISTANCE_MAX
+    values_162.update({
+      status_signal: 2 if track.trackId in matched_track_ids else 1,
+      distance_signal: float(np.clip(abs(track.dRel), 0.0, max_distance)),
+      lateral_signal: CCNC_CLUSTER_TRACK_LATERAL[slot],
+    })
+
 
 def create_ccnc_mdps(packer, CAN, mdps):
   values = mdps.copy()
@@ -37,7 +71,7 @@ def create_ccnc_mdps(packer, CAN, mdps):
 
 
 def create_ccnc_0x161(packer, CAN, frame, msg_161, enabled, lat_active, paused, long_enabled, main_cruise_enabled, gas_override,
-                      hud_control, set_speed, v_ego, lead_visible, show_distance_bars):
+                      hud_control, set_speed, v_ego, lead_visible, show_distance_bars, radar_tracks_active=False):
   values = msg_161.copy()
 
   values.update({
@@ -86,10 +120,14 @@ def create_ccnc_0x161(packer, CAN, frame, msg_161, enabled, lat_active, paused, 
       "TARGET_DISTANCE": target_distance if enabled else TARGET_DISTANCE_MAX,
     })
 
+  if radar_tracks_active:
+    values["DISTANCE_LEAD"] = 0
+
   return packer.make_can_msg("CCNC_0x161", CAN.ECAN, values)
 
 
-def create_ccnc_0x162(packer, CAN, msg_162, enabled, long_enabled, main_cruise_enabled, gas_override, lead_visible, lead_distance):
+def create_ccnc_0x162(packer, CAN, msg_162, enabled, long_enabled, main_cruise_enabled, gas_override, lead_visible, lead_distance,
+                      cluster_track_slots=None, matched_track_ids=None):
   values = msg_162.copy()
 
   if long_enabled:
@@ -98,6 +136,9 @@ def create_ccnc_0x162(packer, CAN, msg_162, enabled, long_enabled, main_cruise_e
       "LEAD_DISTANCE": min(TARGET_DISTANCE_MAX, max(0.0, lead_distance)) if lead_visible else TARGET_DISTANCE_MAX,
       "LEAD_LATERAL": 0,
     })
+
+  if cluster_track_slots is not None:
+    update_ccnc_cluster_tracks(values, cluster_track_slots, matched_track_ids or set())
 
   return packer.make_can_msg("CCNC_0x162", CAN.ECAN, values)
 
@@ -158,13 +199,18 @@ class CcncCarController:
       lat_active = self.mads.lat_active if self.mads.enable_mads else CC.enabled
       paused = self.mads.enable_mads and self.mads.paused
       set_speed = self._get_set_speed(CS.out.vCruiseCluster, CS.is_metric)
+      cluster_track_slots = self.cluster_track_slots if self.radar_tracks_active else None
+      matched_track_ids = {
+        lead.radarTrackId for lead in (self.lead_one, self.lead_two)
+        if lead.status and lead.radar and lead.radarTrackId >= 0
+      }
 
       can_sends.append(create_ccnc_0x161(self.packer, self.CAN, self.frame, CS.msg_161, CC.enabled, lat_active, paused,
                                          self.CP.openpilotLongitudinalControl, CS.main_cruise_enabled, CC.cruiseControl.override,
                                          CC.hudControl, set_speed, CS.out.vEgo, self.lead_visible,
-                                         self.frame - self.distance_bar_frame < 400))
+                                         self.frame - self.distance_bar_frame < 400, self.radar_tracks_active))
       can_sends.append(create_ccnc_0x162(self.packer, self.CAN, CS.msg_162, CC.enabled, self.CP.openpilotLongitudinalControl,
                                          CS.main_cruise_enabled, CC.cruiseControl.override, self.lead_visible,
-                                         self.lead_distance_filter.x))
+                                         self.lead_distance_filter.x, cluster_track_slots, matched_track_ids))
 
     return can_sends
