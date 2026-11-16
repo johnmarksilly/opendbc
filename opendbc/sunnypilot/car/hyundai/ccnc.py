@@ -117,7 +117,7 @@ def create_ccnc_buttons(packer, CAN, cruise_buttons_msg, main_btn):
   return packer.make_can_msg("CRUISE_BUTTONS", CAN.CAM, values)
 
 
-def create_ccnc_alt_buttons(packer, CAN, cruise_buttons_msg, cnt, btn):
+def create_ccnc_alt_buttons(packer, bus, cruise_buttons_msg, cnt, btn):
   values = cruise_buttons_msg.copy()
 
   values.update({
@@ -125,7 +125,7 @@ def create_ccnc_alt_buttons(packer, CAN, cruise_buttons_msg, cnt, btn):
     "CRUISE_BUTTONS": btn,
   })
 
-  return packer.make_can_msg("CRUISE_BUTTONS_ALT", CAN.ECAN, values)
+  return packer.make_can_msg("CRUISE_BUTTONS_ALT", bus, values)
 
 
 class CcncCarController:
@@ -133,24 +133,26 @@ class CcncCarController:
     self.ccnc_lfa_steering = bool(CP_SP.flags & HyundaiFlagsSP.CCNC and not (CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG))
     self.ccnc_lka_alt_buttons = bool(CP_SP.flags & HyundaiFlagsSP.CCNC and CP.flags & HyundaiFlags.CANFD_LKA_STEER_MSG and
                                      CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS)
+    self.ccnc_lfa_alt_buttons_resume = bool(self.ccnc_lfa_steering and CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS and
+                                            not CP.openpilotLongitudinalControl)
     self.lead_distance_filter = FirstOrderFilter(TARGET_DISTANCE_MAX, LEAD_FILTER_RC, 5 * DT_CTRL, initialized=False)
     self.lead_distance_bars_last = None
     self.distance_bar_frame = 0
 
-  def create_alt_button_msgs(self, CS, CC):
+  def create_alt_button_msgs(self, CS, CC, bus, allow_cancel=True):
     can_sends = []
 
     if (self.frame - self.last_button_frame) * DT_CTRL > 0.25:
       btn = None
       if CC.cruiseControl.cancel:
-        if self.cancel_counter > CANCEL_BUTTON_DELAY_FRAMES:
+        if allow_cancel and self.cancel_counter > CANCEL_BUTTON_DELAY_FRAMES:
           btn = Buttons.CANCEL
       elif CC.cruiseControl.resume:
         btn = Buttons.RES_ACCEL
 
       if btn is not None:
         for _ in range(10):
-          can_sends.append(create_ccnc_alt_buttons(self.packer, self.CAN, CS.cruise_buttons_msg, CS.buttons_counter + 1, btn))
+          can_sends.append(create_ccnc_alt_buttons(self.packer, bus, CS.cruise_buttons_msg, CS.buttons_counter + 1, btn))
         self.last_button_frame = self.frame
 
     return can_sends
@@ -167,19 +169,22 @@ class CcncCarController:
     can_sends = []
 
     if self.ccnc_lka_alt_buttons:
-      return self.create_alt_button_msgs(CS, CC)
+      return self.create_alt_button_msgs(CS, CC, self.CAN.ECAN)
 
     if not self.ccnc_lfa_steering:
       return can_sends
 
     can_sends.append(create_ccnc_mdps(self.packer, self.CAN, CS.mdps))
 
+    if self.ccnc_lfa_alt_buttons_resume:
+      can_sends.extend(self.create_alt_button_msgs(CS, CC, self.CAN.CAM, allow_cancel=False))
+
     if self.CP.openpilotLongitudinalControl:
       if not CC.enabled or CC.hudControl.leadDistanceBars != self.lead_distance_bars_last:
         self.distance_bar_frame = self.frame
       self.lead_distance_bars_last = CC.hudControl.leadDistanceBars
 
-      if self.frame % 2 == 0 and self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC:
+      if self.frame % 2 == 0 and self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC and not self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS:
         press_main = CS.cruise_info["MainMode_ACC"] and self.frame % (2 * MAIN_PRESS_FRAMES) < MAIN_PRESS_FRAMES
         can_sends.append(create_ccnc_buttons(self.packer, self.CAN, CS.cruise_buttons_msg, press_main))
 
