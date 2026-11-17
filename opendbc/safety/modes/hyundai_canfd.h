@@ -157,6 +157,21 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     .has_steer_req_tolerance = true,
   };
 
+  const TorqueSteeringLimits HYUNDAI_CANFD_ALT_STEERING_LIMITS = {
+    .max_torque = 384,
+    .max_rt_delta = 112,
+    .max_rate_up = 3,
+    .max_rate_down = 7,
+    .driver_torque_allowance = 250,
+    .driver_torque_multiplier = 2,
+    .type = TorqueDriverLimited,
+
+    .min_valid_request_frames = 89,
+    .max_invalid_request_frames = 2,
+    .min_valid_request_rt_interval = 810000,
+    .has_steer_req_tolerance = true,
+  };
+
   bool tx = true;
 
   // steering
@@ -165,7 +180,8 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     int desired_torque = (((msg->data[6] & 0xFU) << 7U) | (msg->data[5] >> 1U)) - 1024U;
     bool steer_req = GET_BIT(msg, 52U);
 
-    if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
+    const TorqueSteeringLimits limits = hyundai_canfd_alt_limits ? HYUNDAI_CANFD_ALT_STEERING_LIMITS : HYUNDAI_CANFD_STEERING_LIMITS;
+    if (steer_torque_cmd_checks(desired_torque, steer_req, limits)) {
       tx = false;
     }
   }

@@ -184,6 +184,20 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
   SCC_BUS = 1
   STEER_MSG = "LKAS_ALT"
   GAS_MSG = ("ACCELERATOR", "ACCELERATOR_PEDAL")
+class TestHyundaiCanfdLKASteeringAltLimits(TestHyundaiCanfdLKASteeringAltEV):
+
+  MAX_RATE_UP = 3
+  MAX_RATE_DOWN = 7
+  MAX_TORQUE_LOOKUP = [0], [384]
+
+  def setUp(self):
+    libsafety_py.libsafety.set_current_safety_param_sp(HyundaiSafetyFlagsSP.CANFD_ALT_LIMITS)
+    super().setUp()
+
+  def tearDown(self):
+    self.safety.set_current_safety_param_sp(0)
+
+
 class HyundaiCanfdLKASteeringAltButtonsMixin:
   def _button_msg(self, buttons, main_button=0, bus=None):
     values = {

@@ -209,6 +209,9 @@ class CarInterface(CarInterfaceBase):
     if ret.flags & HyundaiFlagsSP.CCNC and not lka_steering:
       ret.safetyParam |= HyundaiSafetyFlagsSP.CCNC
 
+    if stock_cp.carFingerprint == CAR.KIA_CARNIVAL_4TH_GEN and lka_steering:
+      ret.safetyParam |= HyundaiSafetyFlagsSP.CANFD_ALT_LIMITS
+
     if ret.flags & HyundaiFlagsSP.CCNC and lka_steering:
       # this needs to be figured out for ccNC cars with an ADAS Driving ECU
       stock_cp.alphaLongitudinalAvailable = False

@@ -15,6 +15,7 @@ class HyundaiSafetyFlagsSP:
   HAS_LDA_BUTTON = 4
   NON_SCC = 8
   CCNC = 16
+  CANFD_ALT_LIMITS = 32
 
 
 class HyundaiFlagsSP(IntFlag):
