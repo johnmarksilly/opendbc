@@ -189,6 +189,7 @@ class TestHyundaiCanfdLKASteeringAltLimits(TestHyundaiCanfdLKASteeringAltEV):
   MAX_RATE_UP = 3
   MAX_RATE_DOWN = 7
   MAX_TORQUE_LOOKUP = [0], [384]
+  MIN_VALID_STEERING_FRAMES = 79
 
   def setUp(self):
     libsafety_py.libsafety.set_current_safety_param_sp(HyundaiSafetyFlagsSP.CANFD_ALT_LIMITS)

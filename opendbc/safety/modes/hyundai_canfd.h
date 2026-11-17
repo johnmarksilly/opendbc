@@ -166,9 +166,9 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *msg) {
     .driver_torque_multiplier = 2,
     .type = TorqueDriverLimited,
 
-    .min_valid_request_frames = 89,
+    .min_valid_request_frames = 79,
     .max_invalid_request_frames = 2,
-    .min_valid_request_rt_interval = 810000,
+    .min_valid_request_rt_interval = 720000,
     .has_steer_req_tolerance = true,
   };
 

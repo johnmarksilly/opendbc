@@ -25,6 +25,7 @@ class CarControllerParams:
     self.STEER_DRIVER_FACTOR = 1
     self.STEER_THRESHOLD = 150
     self.STEER_STEP = 1  # 100 Hz
+    self.ANGLE_LIMIT_FRAMES = 89
 
     if CP.flags & HyundaiFlags.CANFD:
       self.STEER_MAX = 270
@@ -38,6 +39,7 @@ class CarControllerParams:
         self.STEER_MAX = 384
         self.STEER_DELTA_UP = 3
         self.STEER_DELTA_DOWN = 7
+        self.ANGLE_LIMIT_FRAMES = 79
 
     # To determine the limit for your car, find the maximum value that the stock LKAS will request.
     # If the max stock LKAS request is <384, add your car to this list.

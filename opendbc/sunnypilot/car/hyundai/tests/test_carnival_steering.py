@@ -58,7 +58,7 @@ class TestCarnivalSteering(unittest.TestCase):
     _, frames = self.run_turn(CAR.KIA_CARNIVAL_4TH_GEN)
     cuts = [i for i, (_, req) in enumerate(frames[1:], 1) if not req]
     self.assertTrue(cuts)
-    self.assertLess(cuts[0], 100)
+    self.assertEqual(cuts[0], 79)
 
   def test_other_canfd_cars_unchanged(self):
     CI, frames = self.run_turn(CAR.KIA_EV6)
@@ -66,7 +66,8 @@ class TestCarnivalSteering(unittest.TestCase):
     self.assertEqual((params.STEER_MAX, params.STEER_DELTA_UP, params.STEER_DELTA_DOWN), (270, 2, 3))
     self.assertFalse(CI.CP_SP.safetyParam & HyundaiSafetyFlagsSP.CANFD_ALT_LIMITS)
     self.assertEqual(min(t for t, _ in frames), -270)
-    self.assertFalse(all(req for _, req in frames[1:]))
+    cuts = [i for i, (_, req) in enumerate(frames[1:], 1) if not req]
+    self.assertEqual(cuts[0], 89)
 
 
 if __name__ == "__main__":
