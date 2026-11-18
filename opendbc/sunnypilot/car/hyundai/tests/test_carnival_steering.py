@@ -27,6 +27,17 @@ def steering_frames(sends):
   return out
 
 
+def cut_lengths(frames):
+  lengths, run = set(), 0
+  for _, req in frames[1:]:
+    if not req:
+      run += 1
+    elif run:
+      lengths.add(run)
+      run = 0
+  return lengths
+
+
 class TestCarnivalSteering(unittest.TestCase):
   def run_turn(self, candidate, frames=300, angle=150.0):
     CI = make_interface(candidate)
@@ -59,6 +70,7 @@ class TestCarnivalSteering(unittest.TestCase):
     cuts = [i for i, (_, req) in enumerate(frames[1:], 1) if not req]
     self.assertTrue(cuts)
     self.assertEqual(cuts[0], 79)
+    self.assertEqual(cut_lengths(frames), {1})
 
   def test_other_canfd_cars_unchanged(self):
     CI, frames = self.run_turn(CAR.KIA_EV6)
@@ -68,6 +80,7 @@ class TestCarnivalSteering(unittest.TestCase):
     self.assertEqual(min(t for t, _ in frames), -270)
     cuts = [i for i, (_, req) in enumerate(frames[1:], 1) if not req]
     self.assertEqual(cuts[0], 89)
+    self.assertEqual(cut_lengths(frames), {2})
 
 
 if __name__ == "__main__":
