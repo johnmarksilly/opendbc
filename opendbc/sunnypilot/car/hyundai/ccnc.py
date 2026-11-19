@@ -17,6 +17,9 @@ cruise_buttons_checksum = mk_crc8_fun(CRC8J1850, init_crc=0x97, xor_out=0x97)  #
 
 CANCEL_BUTTON_DELAY_FRAMES = 10  # 100 ms
 MAIN_PRESS_FRAMES = 12  # 120 ms
+ALT_RESUME_PRESS_FRAMES = 20
+ALT_RESUME_RELEASE_FRAMES = 30
+ALT_RESUME_COPIES = 2
 OVERRIDE_BLINK_FRAMES = 100
 OVERRIDE_BLINK_ON_FRAMES = 60
 STOP_DISTANCE_BP = [0.0, 5.0]  # m/s
@@ -139,20 +142,26 @@ class CcncCarController:
     self.lead_distance_bars_last = None
     self.distance_bar_frame = 0
 
-  def create_alt_button_msgs(self, CS, CC, bus, allow_cancel=True):
+  def create_alt_button_msgs(self, CS, CC, bus, allow_cancel=True, hold_resume=False):
     can_sends = []
 
-    if (self.frame - self.last_button_frame) * DT_CTRL > 0.25:
-      btn = None
-      if CC.cruiseControl.cancel:
-        if allow_cancel and self.cancel_counter > CANCEL_BUTTON_DELAY_FRAMES:
-          btn = Buttons.CANCEL
-      elif CC.cruiseControl.resume:
-        btn = Buttons.RES_ACCEL
-
-      if btn is not None:
+    if CC.cruiseControl.cancel:
+      if allow_cancel and (self.frame - self.last_button_frame) * DT_CTRL > 0.25 and self.cancel_counter > CANCEL_BUTTON_DELAY_FRAMES:
         for _ in range(10):
-          can_sends.append(create_ccnc_alt_buttons(self.packer, bus, CS.cruise_buttons_msg, CS.buttons_counter + 1, btn))
+          can_sends.append(create_ccnc_alt_buttons(self.packer, bus, CS.cruise_buttons_msg, CS.buttons_counter + 1, Buttons.CANCEL))
+        self.last_button_frame = self.frame
+
+    elif CC.cruiseControl.resume:
+      if hold_resume:
+        if self.frame - self.last_button_frame >= ALT_RESUME_PRESS_FRAMES + ALT_RESUME_RELEASE_FRAMES:
+          self.last_button_frame = self.frame
+        if self.frame - self.last_button_frame < ALT_RESUME_PRESS_FRAMES:
+          counter = (CS.buttons_counter + 1) % 256
+          for _ in range(ALT_RESUME_COPIES):
+            can_sends.append(create_ccnc_alt_buttons(self.packer, bus, CS.cruise_buttons_msg, counter, Buttons.RES_ACCEL))
+      elif (self.frame - self.last_button_frame) * DT_CTRL > 0.25:
+        for _ in range(10):
+          can_sends.append(create_ccnc_alt_buttons(self.packer, bus, CS.cruise_buttons_msg, CS.buttons_counter + 1, Buttons.RES_ACCEL))
         self.last_button_frame = self.frame
 
     return can_sends
@@ -169,7 +178,7 @@ class CcncCarController:
     can_sends = []
 
     if self.ccnc_lka_alt_buttons:
-      return self.create_alt_button_msgs(CS, CC, self.CAN.ECAN)
+      return self.create_alt_button_msgs(CS, CC, self.CAN.ECAN, hold_resume=True)
 
     if not self.ccnc_lfa_steering:
       return can_sends
